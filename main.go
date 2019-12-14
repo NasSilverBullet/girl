@@ -1,12 +1,22 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httputil"
 	"os"
 )
+
+type Girl struct {
+	URL         string
+	Method      string
+	Headers     map[string]string
+	Body        io.Reader
+	ShowReqBody bool
+	ShowResBody bool
+}
 
 func main() {
 	if err := run(); err != nil {
@@ -16,18 +26,12 @@ func main() {
 	os.Exit(0)
 }
 
-type Girl struct {
-	URL         string
-	Method      string
-	Body        io.Reader
-	ShowReqBody bool
-	ShowResBody bool
-}
-
 func run() error {
 	g := Girl{
-		URL:         "https://google.com",
+		URL:         "https://example.com/",
 		Method:      http.MethodGet,
+		Headers:     map[string]string{"Content-Type": "application/json", "Authorization": "Bearer access-token"},
+		Body:        bytes.NewReader([]byte(`hoge`)),
 		ShowReqBody: true,
 		ShowResBody: false,
 	}
@@ -35,6 +39,10 @@ func run() error {
 	req, err := http.NewRequest(g.Method, g.URL, g.Body)
 	if err != nil {
 		return err
+	}
+
+	for key, value := range g.Headers {
+		req.Header.Set(key, value)
 	}
 
 	reqDump, err := httputil.DumpRequestOut(req, g.ShowReqBody)
