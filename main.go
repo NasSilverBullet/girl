@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// Girl ...
 type Girl struct {
 	URL         string
 	Method      string
