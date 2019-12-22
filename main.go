@@ -19,6 +19,17 @@ type Girl struct {
 	ShowResBody bool
 }
 
+func NewGirl() *Girl {
+	return &Girl{
+		URL:         "https://example.com/",
+		Method:      http.MethodGet,
+		Headers:     map[string]string{"Content-Type": "application/json", "Authorization": "Bearer access-token", "tenant-id": "testid", "application-key": "testkey"},
+		Body:        bytes.NewReader([]byte(`hoge`)),
+		ShowReqBody: true,
+		ShowResBody: false,
+	}
+}
+
 func main() {
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -28,14 +39,7 @@ func main() {
 }
 
 func run() error {
-	g := Girl{
-		URL:         "https://example.com/",
-		Method:      http.MethodGet,
-		Headers:     map[string]string{"Content-Type": "application/json", "Authorization": "Bearer access-token"},
-		Body:        bytes.NewReader([]byte(`hoge`)),
-		ShowReqBody: true,
-		ShowResBody: false,
-	}
+	g := NewGirl()
 
 	req, err := http.NewRequest(g.Method, g.URL, g.Body)
 	if err != nil {
