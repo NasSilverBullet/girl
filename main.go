@@ -3,32 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"net/http"
-	"net/http/httputil"
 	"os"
+
+	"github.com/NasSilverBullet/girl/pkg/girl"
 )
-
-// Girl ...
-type Girl struct {
-	URL         string
-	Method      string
-	Headers     map[string]string
-	Body        io.Reader
-	ShowReqBody bool
-	ShowResBody bool
-}
-
-func NewGirl() *Girl {
-	return &Girl{
-		URL:         "https://example.com/",
-		Method:      http.MethodGet,
-		Headers:     map[string]string{"Content-Type": "application/json", "Authorization": "Bearer access-token", "tenant-id": "testid", "application-key": "testkey"},
-		Body:        bytes.NewReader([]byte(`hoge`)),
-		ShowReqBody: true,
-		ShowResBody: false,
-	}
-}
 
 func main() {
 	if err := run(); err != nil {
@@ -39,36 +18,21 @@ func main() {
 }
 
 func run() error {
-	g := NewGirl()
+	g := girl.New(
+		"https://example.com",
+		http.MethodGet,
+		map[string]string{"Content-Type": "application/json", "Authorization": "Bearer access-token", "tenant-id": "testid", "application-key": "testkey"},
+		bytes.NewReader([]byte(`hoge`)),
+		true,
+		false,
+	)
 
-	req, err := http.NewRequest(g.Method, g.URL, g.Body)
+	reqDump, resDump, err := g.Request()
 	if err != nil {
 		return err
 	}
 
-	for key, value := range g.Headers {
-		req.Header.Set(key, value)
-	}
-
-	reqDump, err := httputil.DumpRequestOut(req, g.ShowReqBody)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(string(reqDump))
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	resDump, err := httputil.DumpResponse(res, g.ShowResBody)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(string(resDump))
+	fmt.Printf("Request Dump:\n>>>>>%s<<<<<\n\n", string(reqDump))
+	fmt.Printf("Response Dump:\n>>>>>%s<<<<<\n", string(resDump))
 	return nil
 }
